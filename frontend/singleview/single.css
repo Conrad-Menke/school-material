@@ -1,0 +1,96 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header {
+  text-align: center;
+  padding: 20px 0;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2em;
+  color: #0078d7;
+}
+
+table.details {
+  width: 100%;
+  margin: 20px 0;
+  border-collapse: collapse;
+}
+
+table.details td {
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+table.details td:first-child {
+  font-weight: bold;
+}
+
+.actions {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.actions .btn {
+  display: inline-block;
+  margin: 5px;
+  padding: 10px 20px;
+  text-decoration: none;
+  color: #fff;
+  background-color: #0078d7;
+  border-radius: 5px;
+}
+
+.actions .btn.secondary {
+  background-color: #666;
+}
+.actions .btn.secondary:hover {
+  background-color: #009c0a;
+}
+
+.actions .btn:hover {
+  background-color: #005a9e;
+}
+
+.actions .btn.danger {
+  background-color: #dc3545;
+}
+.actions .btn.danger:hover {
+  background-color: #9e0000;
+}
+
+h2 {
+  
+  text-align: center;
+  margin-top: 20px;
+}
+
+#pdf-preview {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+footer {
+  text-align: center;
+  padding: 20px 0;
+  border-top: 2px solid #e0e0e0;
+  margin-top: 20px;
+  color: #777;
+}

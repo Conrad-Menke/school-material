@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unterrichtsmaterialien Ursulinenrealschule</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Unterrichtsmaterialien Ursulinenrealschule</h1>
+    <button class="btn upload-button" onclick="window.location.href='upload/upload.html'">Eigene Materialien hochladen</button>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>
+            Titel
+            <button onclick="sortTable(0)">Umsortieren</button>
+            <input type="text" onkeyup="filterColumn(0)" placeholder="Durchsuche Titel">
+          </th>
+          <th>
+            Klasse
+            <button onclick="sortTable(1)">Umsortieren</button>
+            <input type="text" onkeyup="filterColumn(1)" placeholder="Durchsuche Klasse">
+          </th>
+          <th>
+            Unterrichtsfach
+            <button onclick="sortTable(2)">Umsortieren</button>
+            <input type="text" onkeyup="filterColumn(2)" placeholder="Durchsuche Unterrichtsfach">
+          </th>
+          <th>
+            Unterrichtsthema
+            <button onclick="sortTable(3)">Umsortieren</button>
+            <input type="text" onkeyup="filterColumn(3)" placeholder="Durchsuche Unterrichtsthema">
+          </th>
+          <th>
+            Materialform
+            <button onclick="sortTable(4)">Umsortieren</button>
+            <input type="text" onkeyup="filterColumn(4)" placeholder="Durchsuche Materialform">
+          </th>
+          <th>
+            Material<br>
+            <button id="downloadAllBtn">Alle sichtbaren herunterladen</button>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Die Tabellenzeilen werden dynamisch mit JavaScript geladen -->
+      </tbody>
+    </table>
+    <footer>
+      <p>&copy; 2025 Conrad Menke</p>
+    </footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Material ändern</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>Material ändern</h1>
+    <button onclick="window.location.href='../index.html'">Zurück zur Startseite</button>
+
+    <form id="editForm" enctype="multipart/form-data">
+      <!-- Klasse Dropdown -->
+      <label for="klasse">Klasse:</label>
+      <select id="klasse-input" name="klasse" required>
+        <option value="">Bitte wählen</option>
+        <option value="Klasse 05">Klasse 5</option>
+        <option value="Klasse 06">Klasse 6</option>
+        <option value="Klasse 07">Klasse 7</option>
+        <option value="Klasse 08">Klasse 8</option>
+        <option value="Klasse 09">Klasse 9</option>
+        <option value="Klasse 10">Klasse 10</option>
+        <option value="Klassenunabhängig">Klassenunabhängig</option>
+      </select>
+
+      <!-- Unterrichtsfach Dropdown -->
+      <label for="fach">Unterrichtsfach:</label>
+      <select id="fach-input" name="fach" required>
+        <option value="">Bitte wählen</option>
+        <option value="Deutsch">Deutsch</option>
+        <option value="Englisch">Englisch</option>
+        <option value="Französisch">Französisch</option>
+        <option value="Biologie">Biologie</option>
+        <option value="Physik">Physik</option>
+        <option value="Chemie">Chemie</option>
+        <option value="Informatik">Informatik</option>
+        <option value="Sozialwissenschaften">Sozialwissenschaften</option>
+        <option value="Wirtschaft Politik">Wirtschaft Politik</option>
+        <option value="Geschichte">Geschichte</option>
+        <option value="katholische Religionslehre">katholische Religionslehre</option>
+        <option value="evangelische Religionslehre">evangelische Religionslehre</option>
+        <option value="Kunst">Kunst</option>
+        <option value="Musik">Musik</option>
+        <option value="Textilgestaltung">Textilgestaltung</option>
+        <option value="Hauswirtschaft">Hauswirtschaft</option>
+        <option value="Sport">Sport</option>
+        <option value="Mathematik">Mathematik</option>
+        <option value="Erdkunde">Erdkunde</option>
+        <option value="Klassenunabhängig">Klassenunabhängig</option>
+        <option value="AG">AG</option>
+      </select>
+
+      <!-- Materialform Dropdown -->
+      <label for="materialform">Materialform:</label>
+      <select id="materialform-input" name="materialform" required>
+        <option value="">Bitte wählen</option>
+        <option value="Aufgabenblatt">Aufgabenblatt</option>
+        <option value="Test">Test</option>
+        <option value="Klassenarbeit">Klassenarbeit</option>
+        <option value="Unterrichtsentwurf">Unterrichtsentwurf</option>
+        <option value="Unterrichtspräsentation">Unterrichtspräsentation</option>
+      </select>
+
+      <!-- Unterrichtsthema Textfeld -->
+      <label for="thema">Unterrichtsthema:</label>
+      <input type="text" id="thema-input" name="thema" placeholder="Unterrichtsthema" required>
+
+      <!-- Materialtitel Textfeld -->
+      <label for="titel">Materialtitel:</label>
+      <input type="text" id="titel-input" name="titel" placeholder="Titel des Materials" required>
+
+      <!-- Materialbeschreibung Textarea -->
+      <label for="beschreibung">Beschreibung:</label>
+      <textarea id="beschreibung-input" name="beschreibung" placeholder="Materialbeschreibung" required></textarea>
+
+      <!-- Datei-Upload -->
+      <div class="file-upload">
+        <p id="current-file" class="file-display"></p>
+        <label for="material-input"><strong>Material hochladen:</strong></label>
+        <input type="file" id="material-input" name="datei" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip">
+      </div>
+
+
+      <!-- Submit Button -->
+      <button type="submit">Material ändern</button>
+    </form>
+
+    <div id="message"></div>
+
+    <footer>
+      <p>&copy; 2025 Conrad Menke</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

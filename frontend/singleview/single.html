@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Einzelansicht</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <link rel="stylesheet" href="single.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 id="title">Eintrag Einzelansicht</h1>
+    </header>
+    <main>
+      <table class="details">
+        <tr>
+          <td><strong>Klasse:</strong></td>
+          <td><span id="klasse">Lädt...</span></td>
+        </tr>
+        <tr>
+          <td><strong>Fach:</strong></td>
+          <td><span id="fach">Lädt...</span></td>
+        </tr>
+        <tr>
+          <td><strong>Thema:</strong></td>
+          <td><span id="thema">Lädt...</span></td>
+        </tr>
+        <tr>
+          <td><strong>Materialform:</strong></td>
+          <td><span id="materialform">Lädt...</span></td>
+        </tr>
+        <tr>
+          <td><strong>Beschreibung:</strong></td>
+          <td><span id="beschreibung">Lädt...</span></td>
+        </tr>
+        <tr>
+          <td><strong>AutorIn:</strong></td>
+          <td><span id="Autor">Lädt...</span></td>
+        </tr>
+        <tr>
+          <td><strong>Erstellungsdatum:</strong></td>
+          <td><span id="Datum">Lädt...</span></td>
+      </table>
+      <div class="actions">
+        <a id="download-link" href="#" class="btn">Herunterladen</a>
+        <a href="/" class="btn secondary">Zurück zur Übersicht</a>
+        <a id="edit-link" href="#" class="btn">Bearbeiten</a>
+        <a id="delete" href="#" class="btn danger" data-id="">Löschen</a>
+      </div>
+      <h2>PDF Vorschau</h2>
+      <canvas id="pdf-preview" width="600"></canvas>
+    </main>
+    <footer>
+      <p>&copy; 2025 Conrad Menke</p>
+    </footer>
+  </div>
+  <script src="single.js"></script>
+</body>
+</html>

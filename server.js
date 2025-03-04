@@ -1,0 +1,170 @@
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
+
+const app = express();
+const port = 5000;
+
+// SQLite-Datenbank initialisieren
+const db = new sqlite3.Database('./material.db');
+
+// Multer konfigurieren
+const upload = multer({ dest: 'uploads/' });
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Für Formulardaten
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+// GET: Alle Materialien abrufen
+app.get('/materialien', (req, res) => {
+    db.all('SELECT * FROM materialien', [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+
+// POST: Material hochladen
+app.post('/upload', upload.single('datei'), (req, res) => {
+    const { klasse, fach, materialform, thema, titel, beschreibung, autor, datum } = req.body;
+
+    if (!req.file) {
+        return res.status(400).json({ error: 'Keine Datei hochgeladen' });
+    }
+
+    const dateiPfad = req.file.filename; // Generierter Dateiname durch Multer
+    const originalDateiname = req.file.originalname; // Originaler Dateiname
+
+    const sql = `INSERT INTO materialien 
+        (klasse, fach, materialform, thema, titel, beschreibung, dateiPfad, originalDateiname, autor, datum) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    const params = [
+        klasse,
+        fach,
+        materialform,
+        thema,
+        titel,
+        beschreibung || null,
+        dateiPfad,
+        originalDateiname,
+        autor || 'Unbekannt', // Standardwert, falls nicht angegeben
+        datum || new Date().toISOString() // Standardwert, falls nicht angegeben
+    ];
+
+    db.run(sql, params, function (err) {
+        if (err) {
+            console.error(err.message);
+            return res.status(500).json({ error: err.message });
+        }
+        res.status(200).json({ message: 'Erfolgreich hochgeladen', id: this.lastID });
+    });
+});
+
+// GET: Material herunterladen
+app.get('/download/:id', (req, res) => {
+    const materialId = req.params.id;
+
+    const sql = 'SELECT * FROM materialien WHERE id = ?';
+    db.get(sql, [materialId], (err, row) => {
+        if (err) {
+            console.error('Fehler beim Abrufen des Materials:', err);
+            return res.status(500).json({ error: 'Fehler beim Abrufen des Materials' });
+        }
+
+        if (!row) {
+            return res.status(404).json({ error: 'Material nicht gefunden' });
+        }
+
+        const filePath = path.join(__dirname, 'uploads', row.dateiPfad); // Dateipfad aus DB
+        const originalName = row.originalDateiname; // Originaler Dateiname
+
+        // Prüfen, ob die Datei existiert
+        fs.access(filePath, fs.constants.F_OK, (err) => {
+            if (err) {
+                console.error('Datei nicht gefunden:', filePath);
+                return res.status(404).json({ error: 'Datei nicht gefunden' });
+            }
+
+            // Datei als Download senden
+            res.download(filePath, originalName, (err) => {
+                if (err) {
+                    console.error('Fehler beim Senden der Datei:', err);
+                    return res.status(500).json({ error: 'Fehler beim Herunterladen der Datei' });
+                }
+            });
+        });
+    });
+});
+
+// Material löschen
+app.delete('/materialien/:id', (req, res) => {
+    const materialId = req.params.id;
+
+    // Datenbankeintrag abrufen
+    db.get('SELECT * FROM materialien WHERE id = ?', [materialId], (err, row) => {
+        if (err) {
+            console.error('Fehler beim Abrufen des Materials:', err);
+            return res.status(500).json({ error: 'Fehler beim Abrufen des Materials' });
+        }
+
+        if (!row) {
+            return res.status(404).json({ error: 'Material nicht gefunden' });
+        }
+
+        // Datei löschen
+        const filePath = path.join(__dirname, 'uploads', row.dateiPfad); // Passe 'dateiPfad' an dein DB-Schema an
+        fs.unlink(filePath, unlinkErr => {
+            if (unlinkErr && unlinkErr.code !== 'ENOENT') {
+                console.error('Fehler beim Löschen der Datei:', unlinkErr);
+                return res.status(500).json({ error: 'Fehler beim Löschen der Datei' });
+            }
+
+            // Datenbankeintrag löschen
+            db.run('DELETE FROM materialien WHERE id = ?', [materialId], deleteErr => {
+                if (deleteErr) {
+                    console.error('Fehler beim Löschen des Datenbankeintrags:', deleteErr);
+                    return res.status(500).json({ error: 'Fehler beim Löschen des Datenbankeintrags' });
+                }
+
+                res.status(200).json({ message: 'Material und Datei erfolgreich gelöscht' });
+            });
+        });
+    });
+});
+
+app.get('/singleview/:id', (req, res) => {
+    const id = req.params.id;
+    res.sendFile(path.join(__dirname, 'frontend/singleview/single.html'));
+});
+
+// GET: Einzelansicht für ein Material
+app.get('/materialien/:id', (req, res) => {
+    const materialId = req.params.id;
+    console.log('Angefragte ID:', materialId);
+
+    const sql = 'SELECT * FROM materialien WHERE id = ?';
+    db.get(sql, [materialId], (err, row) => {
+        if (err) {
+            console.error('Datenbankfehler:', err.message);
+            return res.status(500).json({ error: 'Serverfehler' });
+        }
+
+        if (!row) {
+            console.warn('Material nicht gefunden:', materialId);
+            return res.status(404).json({ error: 'Material nicht gefunden' });
+        }
+
+        console.log('Gefundene Daten:', row);
+        res.json(row);
+    });
+});
+
+// Auf Port hören
+app.listen(port, () => {
+    console.log(`Server läuft auf http://localhost:${port}`);
+});
