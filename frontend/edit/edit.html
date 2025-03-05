@@ -1,102 +1,164 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Material ändern</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Material bearbeiten - Ursulinenrealschule</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
 </head>
-
 <body>
+  <header class="header">
+    <h1>Unterrichtsmaterialien Ursulinenrealschule</h1>
+  </header>
+  
+  <nav class="nav">
+    <a href="/index.html"><i class="fas fa-home"></i> Übersicht</a>
+    <a href="/upload/upload.html"><i class="fas fa-upload"></i> Material hochladen</a>
+  </nav>
+
   <div class="container">
-    <h1>Material ändern</h1>
-    <button onclick="window.location.href='../index.html'">Zurück zur Startseite</button>
-
-    <form id="editForm" enctype="multipart/form-data">
-      <!-- Klasse Dropdown -->
-      <label for="klasse">Klasse:</label>
-      <select id="klasse-input" name="klasse" required>
-        <option value="">Bitte wählen</option>
-        <option value="Klasse 05">Klasse 5</option>
-        <option value="Klasse 06">Klasse 6</option>
-        <option value="Klasse 07">Klasse 7</option>
-        <option value="Klasse 08">Klasse 8</option>
-        <option value="Klasse 09">Klasse 9</option>
-        <option value="Klasse 10">Klasse 10</option>
-        <option value="Klassenunabhängig">Klassenunabhängig</option>
-      </select>
-
-      <!-- Unterrichtsfach Dropdown -->
-      <label for="fach">Unterrichtsfach:</label>
-      <select id="fach-input" name="fach" required>
-        <option value="">Bitte wählen</option>
-        <option value="Deutsch">Deutsch</option>
-        <option value="Englisch">Englisch</option>
-        <option value="Französisch">Französisch</option>
-        <option value="Biologie">Biologie</option>
-        <option value="Physik">Physik</option>
-        <option value="Chemie">Chemie</option>
-        <option value="Informatik">Informatik</option>
-        <option value="Sozialwissenschaften">Sozialwissenschaften</option>
-        <option value="Wirtschaft Politik">Wirtschaft Politik</option>
-        <option value="Geschichte">Geschichte</option>
-        <option value="katholische Religionslehre">katholische Religionslehre</option>
-        <option value="evangelische Religionslehre">evangelische Religionslehre</option>
-        <option value="Kunst">Kunst</option>
-        <option value="Musik">Musik</option>
-        <option value="Textilgestaltung">Textilgestaltung</option>
-        <option value="Hauswirtschaft">Hauswirtschaft</option>
-        <option value="Sport">Sport</option>
-        <option value="Mathematik">Mathematik</option>
-        <option value="Erdkunde">Erdkunde</option>
-        <option value="Klassenunabhängig">Klassenunabhängig</option>
-        <option value="AG">AG</option>
-      </select>
-
-      <!-- Materialform Dropdown -->
-      <label for="materialform">Materialform:</label>
-      <select id="materialform-input" name="materialform" required>
-        <option value="">Bitte wählen</option>
-        <option value="Aufgabenblatt">Aufgabenblatt</option>
-        <option value="Test">Test</option>
-        <option value="Klassenarbeit">Klassenarbeit</option>
-        <option value="Unterrichtsentwurf">Unterrichtsentwurf</option>
-        <option value="Unterrichtspräsentation">Unterrichtspräsentation</option>
-      </select>
-
-      <!-- Unterrichtsthema Textfeld -->
-      <label for="thema">Unterrichtsthema:</label>
-      <input type="text" id="thema-input" name="thema" placeholder="Unterrichtsthema" required>
-
-      <!-- Materialtitel Textfeld -->
-      <label for="titel">Materialtitel:</label>
-      <input type="text" id="titel-input" name="titel" placeholder="Titel des Materials" required>
-
-      <!-- Materialbeschreibung Textarea -->
-      <label for="beschreibung">Beschreibung:</label>
-      <textarea id="beschreibung-input" name="beschreibung" placeholder="Materialbeschreibung" required></textarea>
-
-      <!-- Datei-Upload -->
-      <div class="file-upload">
-        <p id="current-file" class="file-display"></p>
-        <label for="material-input"><strong>Material hochladen:</strong></label>
-        <input type="file" id="material-input" name="datei" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip">
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-edit"></i> Material bearbeiten</h2>
       </div>
-
-
-      <!-- Submit Button -->
-      <button type="submit">Material ändern</button>
-    </form>
-
-    <div id="message"></div>
-
-    <footer>
-      <p>&copy; 2025 Conrad Menke</p>
-    </footer>
+      
+      <div class="card-body">
+        <div id="loading-indicator" class="text-center">
+          <p>Daten werden geladen, bitte warten...</p>
+          <div class="spinner"></div>
+        </div>
+        
+        <form id="editForm" enctype="multipart/form-data" style="display: none;">
+          <div class="d-flex flex-wrap">
+            <div class="form-group" style="flex: 1; min-width: 300px; margin-right: 20px;">
+              <label for="klasse-input" class="form-label">Klasse:</label>
+              <select id="klasse-input" name="klasse" class="form-select" required>
+                <option value="">Bitte wählen</option>
+                <option value="Klasse 05">Klasse 5</option>
+                <option value="Klasse 06">Klasse 6</option>
+                <option value="Klasse 07">Klasse 7</option>
+                <option value="Klasse 08">Klasse 8</option>
+                <option value="Klasse 09">Klasse 9</option>
+                <option value="Klasse 10">Klasse 10</option>
+                <option value="Klassenunabhängig">Klassenunabhängig</option>
+              </select>
+            </div>
+            
+            <div class="form-group" style="flex: 1; min-width: 300px;">
+              <label for="fach-input" class="form-label">Unterrichtsfach:</label>
+              <select id="fach-input" name="fach" class="form-select" required>
+                <option value="">Bitte wählen</option>
+                <option value="Deutsch">Deutsch</option>
+                <option value="Englisch">Englisch</option>
+                <option value="Französisch">Französisch</option>
+                <option value="Biologie">Biologie</option>
+                <option value="Physik">Physik</option>
+                <option value="Chemie">Chemie</option>
+                <option value="Informatik">Informatik</option>
+                <option value="Sozialwissenschaften">Sozialwissenschaften</option>
+                <option value="Wirtschaft Politik">Wirtschaft Politik</option>
+                <option value="Geschichte">Geschichte</option>
+                <option value="katholische Religionslehre">katholische Religionslehre</option>
+                <option value="evangelische Religionslehre">evangelische Religionslehre</option>
+                <option value="Kunst">Kunst</option>
+                <option value="Musik">Musik</option>
+                <option value="Textilgestaltung">Textilgestaltung</option>
+                <option value="Hauswirtschaft">Hauswirtschaft</option>
+                <option value="Sport">Sport</option>
+                <option value="Mathematik">Mathematik</option>
+                <option value="Erdkunde">Erdkunde</option>
+                <option value="AG">AG</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="materialform-input" class="form-label">Materialform:</label>
+            <select id="materialform-input" name="materialform" class="form-select" required>
+              <option value="">Bitte wählen</option>
+              <option value="Aufgabenblatt">Aufgabenblatt</option>
+              <option value="Test">Test</option>
+              <option value="Klassenarbeit">Klassenarbeit</option>
+              <option value="Unterrichtsentwurf">Unterrichtsentwurf</option>
+              <option value="Unterrichtspräsentation">Unterrichtspräsentation</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="thema-input" class="form-label">Unterrichtsthema:</label>
+            <input type="text" id="thema-input" name="thema" class="form-input" placeholder="z.B. Gleichungen, Mittelalter, Wortarten..." required>
+          </div>
+          
+          <div class="form-group">
+            <label for="titel-input" class="form-label">Materialtitel:</label>
+            <input type="text" id="titel-input" name="titel" class="form-input" placeholder="Ein präziser, aussagekräftiger Titel für das Material" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="beschreibung-input" class="form-label">Beschreibung:</label>
+            <textarea id="beschreibung-input" name="beschreibung" class="form-textarea" placeholder="Kurze Beschreibung des Materials, Lernziele, Einsatzmöglichkeiten..." required></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="material-input" class="form-label"><i class="fas fa-file-pdf"></i> Material hochladen:</label>
+            <div class="file-info mb-sm">
+              <i class="fas fa-info-circle"></i> 
+              <span id="current-file">Aktuell ist keine Datei hochgeladen.</span>
+            </div>
+            <input type="file" id="material-input" name="datei" class="form-file" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip">
+            <small>Lassen Sie dieses Feld leer, wenn Sie die Datei nicht ändern möchten.</small>
+          </div>
+          
+          <div class="form-group">
+            <div class="d-flex justify-between">
+              <button type="button" class="btn btn-secondary" onclick="cancelEdit()">
+                <i class="fas fa-times"></i> Abbrechen
+              </button>
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Änderungen speichern
+              </button>
+            </div>
+          </div>
+        </form>
+        
+        <div id="edit-progress" style="display: none;">
+          <h3 class="text-center mb-md">Speichern...</h3>
+          <div class="progress-bar">
+            <div id="progress-bar-fill" style="width: 0%"></div>
+          </div>
+          <p id="progress-text" class="text-center mt-md">0%</p>
+        </div>
+        
+        <div id="edit-success" style="display: none;">
+          <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <h3>Änderungen erfolgreich gespeichert!</h3>
+            <p>Die Materialdetails wurden aktualisiert.</p>
+            <div class="mt-md">
+              <button class="btn btn-secondary" onclick="window.location.href='/index.html'">Zurück zur Übersicht</button>
+              <button class="btn" id="view-material-btn">Material anzeigen</button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="edit-error" style="display: none;">
+          <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Fehler beim Speichern</h3>
+            <p id="error-message">Es ist ein Fehler aufgetreten.</p>
+            <button class="btn" onclick="resetEditUI()">Erneut versuchen</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script src="script.js"></script>
-</body>
+  <footer class="footer">
+    <p>&copy; 2025 Conrad Menke | Unterrichtsmaterialien-Plattform</p>
+  </footer>
 
+  <script src="/edit/edit.js"></script>
+</body>
 </html>

@@ -3,58 +3,120 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Einzelansicht</title>
+  <title>Material Details - Ursulinenrealschule</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-  <link rel="stylesheet" href="single.css">
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
+  <header class="header">
+    <h1>Unterrichtsmaterialien Ursulinenrealschule</h1>
+  </header>
+  
+  <nav class="nav">
+    <a href="/index.html"><i class="fas fa-home"></i> Übersicht</a>
+    <a href="/upload/upload.html"><i class="fas fa-upload"></i> Material hochladen</a>
+  </nav>
+
   <div class="container">
-    <header>
-      <h1 id="title">Eintrag Einzelansicht</h1>
-    </header>
-    <main>
-      <table class="details">
-        <tr>
-          <td><strong>Klasse:</strong></td>
-          <td><span id="klasse">Lädt...</span></td>
-        </tr>
-        <tr>
-          <td><strong>Fach:</strong></td>
-          <td><span id="fach">Lädt...</span></td>
-        </tr>
-        <tr>
-          <td><strong>Thema:</strong></td>
-          <td><span id="thema">Lädt...</span></td>
-        </tr>
-        <tr>
-          <td><strong>Materialform:</strong></td>
-          <td><span id="materialform">Lädt...</span></td>
-        </tr>
-        <tr>
-          <td><strong>Beschreibung:</strong></td>
-          <td><span id="beschreibung">Lädt...</span></td>
-        </tr>
-        <tr>
-          <td><strong>AutorIn:</strong></td>
-          <td><span id="Autor">Lädt...</span></td>
-        </tr>
-        <tr>
-          <td><strong>Erstellungsdatum:</strong></td>
-          <td><span id="Datum">Lädt...</span></td>
-      </table>
-      <div class="actions">
-        <a id="download-link" href="#" class="btn">Herunterladen</a>
-        <a href="/" class="btn secondary">Zurück zur Übersicht</a>
-        <a id="edit-link" href="#" class="btn">Bearbeiten</a>
-        <a id="delete" href="#" class="btn danger" data-id="">Löschen</a>
+    <div class="card">
+      <div class="card-header">
+        <h2 id="title">Material wird geladen...</h2>
       </div>
-      <h2>PDF Vorschau</h2>
-      <canvas id="pdf-preview" width="600"></canvas>
-    </main>
-    <footer>
-      <p>&copy; 2025 Conrad Menke</p>
-    </footer>
+      
+      <div class="card-body">
+        <div id="loading-indicator" class="text-center">
+          <p>Material wird geladen, bitte warten...</p>
+          <div class="spinner"></div>
+        </div>
+        
+        <div id="material-content" style="display: none;">
+          <table class="details-table">
+            <tr>
+              <td>Klasse:</td>
+              <td><span id="klasse">-</span></td>
+            </tr>
+            <tr>
+              <td>Fach:</td>
+              <td><span id="fach">-</span></td>
+            </tr>
+            <tr>
+              <td>Thema:</td>
+              <td><span id="thema">-</span></td>
+            </tr>
+            <tr>
+              <td>Materialform:</td>
+              <td><span id="materialform">-</span></td>
+            </tr>
+            <tr>
+              <td>Beschreibung:</td>
+              <td><span id="beschreibung">-</span></td>
+            </tr>
+            <tr>
+              <td>AutorIn:</td>
+              <td><span id="autor">-</span></td>
+            </tr>
+            <tr>
+              <td>Erstellungsdatum:</td>
+              <td><span id="datum">-</span></td>
+            </tr>
+          </table>
+          
+          <div class="actions">
+            <a id="download-link" href="#" class="btn">
+              <i class="fas fa-download"></i> Herunterladen
+            </a>
+            <a href="/" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> Zurück zur Übersicht
+            </a>
+            <a id="edit-link" href="#" class="btn">
+              <i class="fas fa-edit"></i> Bearbeiten
+            </a>
+            <a id="delete-btn" href="#" class="btn btn-danger" data-id="">
+              <i class="fas fa-trash"></i> Löschen
+            </a>
+          </div>
+          
+          <div class="pdf-container">
+            <h3><i class="fas fa-file-pdf"></i> PDF Vorschau</h3>
+            <div id="pdf-controls" class="mb-md">
+              <button id="prev-page" class="btn btn-sm" disabled>
+                <i class="fas fa-chevron-left"></i> Vorherige Seite
+              </button>
+              <span id="page-info">Seite 1 von 1</span>
+              <button id="next-page" class="btn btn-sm" disabled>
+                Nächste Seite <i class="fas fa-chevron-right"></i>
+              </button>
+              <select id="zoom-select" class="form-select" style="width: auto; display: inline-block; margin-left: 10px;">
+                <option value="0.5">50%</option>
+                <option value="0.75">75%</option>
+                <option value="1" selected>100%</option>
+                <option value="1.25">125%</option>
+                <option value="1.5">150%</option>
+                <option value="2">200%</option>
+              </select>
+            </div>
+            <canvas id="pdf-preview"></canvas>
+          </div>
+        </div>
+        
+        <div id="error-container" class="text-center" style="display: none;">
+          <p class="text-danger">Beim Laden des Materials ist ein Fehler aufgetreten.</p>
+          <button class="btn" onclick="location.reload()">Erneut versuchen</button>
+        </div>
+      </div>
+    </div>
   </div>
-  <script src="single.js"></script>
+
+  <footer class="footer">
+    <p>&copy; 2025 Conrad Menke | Unterrichtsmaterialien-Plattform</p>
+  </footer>
+
+  <script>
+    // PDF.js Worker-Pfad setzen
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+  </script>
+  <script src="/singleview/single.js"></script>
 </body>
 </html>

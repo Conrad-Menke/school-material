@@ -26,17 +26,25 @@ function filterColumn(columnIndex) {
 function sortTable(columnIndex) {
   const table = document.getElementById('dataTable');
   const rows = Array.from(table.querySelectorAll('tbody tr'));
-  const isNumeric = !isNaN(rows[0].cells[columnIndex].textContent.trim());
+  
+  // Prüfen, ob die Tabelle Zeilen hat
+  if (rows.length === 0) {
+    console.log('Keine Zeilen zum Sortieren vorhanden');
+    return;
+  }
+  
+  // Bestimmen, ob der Spalteninhalt numerisch ist
+  const isNumeric = !isNaN(rows[0].cells[columnIndex]?.textContent.trim());
 
   let ascending = table.getAttribute('data-sort-asc') !== 'true';
   table.setAttribute('data-sort-asc', ascending);
 
   rows.sort((a, b) => {
-    const aText = a.cells[columnIndex].textContent.trim();
-    const bText = b.cells[columnIndex].textContent.trim();
+    const aText = a.cells[columnIndex]?.textContent.trim() || '';
+    const bText = b.cells[columnIndex]?.textContent.trim() || '';
 
     if (isNumeric) {
-      return ascending ? aText - bText : bText - aText;
+      return ascending ? Number(aText) - Number(bText) : Number(bText) - Number(aText);
     } else {
       return ascending ? aText.localeCompare(bText) : bText.localeCompare(aText);
     }
@@ -68,6 +76,7 @@ window.onload = async () => {
           <td>${material.thema}</td>
           <td>${material.materialform}</td>
           <td><button class="download" data-id="${material.id}">Herunterladen</button></td>
+          <td><button class="delete-button" data-id="${material.id}">Löschen</button></td>
       `;
       tableBody.appendChild(row);
     });
@@ -79,6 +88,27 @@ window.onload = async () => {
         window.location.href = `/download/${materialId}`;
       });
     });
+
+    // Löschen-Button Event Listener hinzufügen
+    document.querySelectorAll('.delete-button').forEach(button => {
+      button.addEventListener('click', event => {
+        const materialId = button.getAttribute('data-id');
+        if (confirm('Möchten Sie diesen Eintrag wirklich löschen? Er ist danach nicht mehr wiederherstellbar.')) {
+          fetch(`/materialien/${materialId}`, { method: 'DELETE' })
+            .then(response => {
+              if (response.ok) {
+                alert('Eintrag erfolgreich gelöscht');
+                button.closest('tr').remove();
+              } else {
+                alert('Fehler beim Löschen des Eintrags');
+              }
+            })
+            .catch(error => {
+              console.error('Fehler beim Löschen:', error);
+            });
+        }
+      });
+    });
   } catch (error) {
     console.error('Fehler beim Laden der Materialien:', error);
     document.getElementById('dataTable').innerHTML = '<p>Fehler beim Laden der Materialien.</p>';
@@ -86,29 +116,51 @@ window.onload = async () => {
 };
 
 // Download-Button für alle gefilterten Dateien
-document.getElementById('downloadAllBtn').addEventListener('click', () => {
-  fetch('/download-all', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ filter: currentFilters }),
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Fehler beim Herunterladen');
+document.addEventListener('DOMContentLoaded', () => {
+  const downloadAllBtn = document.getElementById('downloadAllBtn');
+  
+  if (downloadAllBtn) {
+    downloadAllBtn.addEventListener('click', () => {
+      const visibleRows = document.querySelectorAll('#dataTable tbody tr:not([style*="display: none"])');
+      const materialIds = Array.from(visibleRows).map(row => {
+        const downloadButton = row.querySelector('.download');
+        return downloadButton ? downloadButton.getAttribute('data-id') : null;
+      }).filter(id => id !== null);
+      
+      if (materialIds.length === 0) {
+        alert('Keine sichtbaren Materialien zum Herunterladen verfügbar.');
+        return;
       }
-      return response.blob();
-    })
-    .then(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'filtered_files.zip';
-      a.click();
-      window.URL.revokeObjectURL(url);
-    })
-    .catch(error => {
-      console.error('Fehler beim Download:', error);
+      
+      console.log(`Download aller sichtbaren Materialien: ${materialIds.length} Einträge`);
+      
+      fetch('/download-all', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids: materialIds }),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Fehler beim Herunterladen');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'filtered_files.zip';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(error => {
+        console.error('Fehler beim Download:', error);
+        alert(`Fehler beim Download: ${error.message}`);
+      });
     });
+  } else {
+    console.warn("'downloadAllBtn' nicht gefunden");
+  }
 });

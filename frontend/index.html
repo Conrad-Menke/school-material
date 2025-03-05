@@ -1,57 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Unterrichtsmaterialien Ursulinenrealschule</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-  <div class="container">
+  <header class="header">
     <h1>Unterrichtsmaterialien Ursulinenrealschule</h1>
-    <button class="btn upload-button" onclick="window.location.href='upload/upload.html'">Eigene Materialien hochladen</button>
-    <table id="dataTable">
-      <thead>
-        <tr>
-          <th>
-            Titel
-            <button onclick="sortTable(0)">Umsortieren</button>
-            <input type="text" onkeyup="filterColumn(0)" placeholder="Durchsuche Titel">
-          </th>
-          <th>
-            Klasse
-            <button onclick="sortTable(1)">Umsortieren</button>
-            <input type="text" onkeyup="filterColumn(1)" placeholder="Durchsuche Klasse">
-          </th>
-          <th>
-            Unterrichtsfach
-            <button onclick="sortTable(2)">Umsortieren</button>
-            <input type="text" onkeyup="filterColumn(2)" placeholder="Durchsuche Unterrichtsfach">
-          </th>
-          <th>
-            Unterrichtsthema
-            <button onclick="sortTable(3)">Umsortieren</button>
-            <input type="text" onkeyup="filterColumn(3)" placeholder="Durchsuche Unterrichtsthema">
-          </th>
-          <th>
-            Materialform
-            <button onclick="sortTable(4)">Umsortieren</button>
-            <input type="text" onkeyup="filterColumn(4)" placeholder="Durchsuche Materialform">
-          </th>
-          <th>
-            Material<br>
-            <button id="downloadAllBtn">Alle sichtbaren herunterladen</button>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Die Tabellenzeilen werden dynamisch mit JavaScript geladen -->
-      </tbody>
-    </table>
-    <footer>
-      <p>&copy; 2025 Conrad Menke</p>
-    </footer>
+  </header>
+  
+  <nav class="nav">
+    <a href="index.html" class="active"><i class="fas fa-home"></i> Übersicht</a>
+    <a href="upload/upload.html"><i class="fas fa-upload"></i> Material hochladen</a>
+  </nav>
+
+  <div class="container">
+    <div class="d-flex justify-between align-center mb-lg">
+      <h2 class="mb-sm">Materialübersicht</h2>
+      <button class="btn btn-success" onclick="window.location.href='upload/upload.html'">
+        <i class="fas fa-plus"></i> Eigenes Material hochladen
+      </button>
+    </div>
+
+    <div class="card mb-lg">
+      <div class="card-body">
+        <div class="d-flex flex-wrap align-center">
+          <div class="form-group" style="flex: 1; min-width: 200px; margin-right: 20px;">
+            <label for="filter-fach" class="form-label">Filtern nach Fach:</label>
+            <select id="filter-fach" class="form-select">
+              <option value="">Alle Fächer</option>
+              <!-- Wird dynamisch gefüllt -->
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1; min-width: 200px; margin-right: 20px;">
+            <label for="filter-klasse" class="form-label">Filtern nach Klasse:</label>
+            <select id="filter-klasse" class="form-select">
+              <option value="">Alle Klassen</option>
+              <!-- Wird dynamisch gefüllt -->
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1; min-width: 200px;">
+            <label for="search-input" class="form-label">Suche:</label>
+            <input type="text" id="search-input" class="form-input" placeholder="Nach Titel, Thema, etc. suchen...">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table id="dataTable" class="table">
+        <thead>
+          <tr>
+            <th>Titel <button onclick="sortTable(0)" class="table-sort"><i class="fas fa-sort"></i></button></th>
+            <th>Klasse <button onclick="sortTable(1)" class="table-sort"><i class="fas fa-sort"></i></button></th>
+            <th>Fach <button onclick="sortTable(2)" class="table-sort"><i class="fas fa-sort"></i></button></th>
+            <th>Thema <button onclick="sortTable(3)" class="table-sort"><i class="fas fa-sort"></i></button></th>
+            <th>Materialform <button onclick="sortTable(4)" class="table-sort"><i class="fas fa-sort"></i></button></th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Tabellendaten werden dynamisch mit JavaScript geladen -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-between align-center" id="pagination-container">
+      <div>
+        <span id="showing-entries">Zeige 0 Einträge</span>
+      </div>
+      <div>
+        <button id="downloadAllBtn" class="btn btn-secondary">
+          <i class="fas fa-download"></i> Alle sichtbaren herunterladen
+        </button>
+      </div>
+    </div>
   </div>
-  <script src="script.js"></script>
+
+  <footer class="footer">
+    <p>&copy; 2025 Conrad Menke | Unterrichtsmaterialien-Plattform</p>
+  </footer>
+
+  <script src="js/script.js"></script>
 </body>
 </html>
