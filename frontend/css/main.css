@@ -76,6 +76,8 @@
   
   h2 {
     font-size: 2rem;
+    color: var(--white);
+    text-align: center;
   }
   
   h3 {
@@ -492,4 +494,42 @@
     .nav a {
       margin-bottom: var(--spacing-xs);
     }
+  }
+
+  .download, #downloadAllBtn {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .download::after, #downloadAllBtn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255,255,255,0.2);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .download:hover::after, #downloadAllBtn:hover::after {
+    opacity: 1;
+  }
+  
+  .download:hover, #downloadAllBtn:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   }
