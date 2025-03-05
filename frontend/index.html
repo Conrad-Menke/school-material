@@ -29,23 +29,44 @@
     <div class="card mb-lg">
       <div class="card-body">
         <div class="d-flex flex-wrap align-center">
-          <div class="form-group" style="flex: 1; min-width: 200px; margin-right: 20px;">
-            <label for="filter-fach" class="form-label">Filtern nach Fach:</label>
+          <div class="form-group" style="flex: 1; min-width: 200px; margin-right: 15px;">
+            <label for="filter-fach" class="form-label">Fach:</label>
             <select id="filter-fach" class="form-select">
               <option value="">Alle Fächer</option>
               <!-- Wird dynamisch gefüllt -->
             </select>
           </div>
-          <div class="form-group" style="flex: 1; min-width: 200px; margin-right: 20px;">
-            <label for="filter-klasse" class="form-label">Filtern nach Klasse:</label>
+          <div class="form-group" style="flex: 1; min-width: 200px; margin-right: 15px;">
+            <label for="filter-klasse" class="form-label">Klasse:</label>
             <select id="filter-klasse" class="form-select">
               <option value="">Alle Klassen</option>
               <!-- Wird dynamisch gefüllt -->
             </select>
           </div>
+          <div class="form-group" style="flex: 1; min-width: 200px; margin-right: 15px;">
+            <label for="filter-materialform" class="form-label">Materialform:</label>
+            <select id="filter-materialform" class="form-select">
+              <option value="">Alle Formen</option>
+              <!-- Wird dynamisch gefüllt -->
+            </select>
+          </div>
           <div class="form-group" style="flex: 1; min-width: 200px;">
+            <label for="filter-thema" class="form-label">Thema:</label>
+            <select id="filter-thema" class="form-select">
+              <option value="">Alle Themen</option>
+              <!-- Wird dynamisch gefüllt -->
+            </select>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap align-center mt-md">
+          <div class="form-group" style="flex: 1; min-width: 200px; margin-right: 15px;">
             <label for="search-input" class="form-label">Suche:</label>
             <input type="text" id="search-input" class="form-input" placeholder="Nach Titel, Thema, etc. suchen...">
+          </div>
+          <div class="form-group" style="align-self: flex-end;">
+            <button id="clear-filters" class="btn btn-outline">
+              <i class="fas fa-times"></i> Filter zurücksetzen
+            </button>
           </div>
         </div>
       </div>
@@ -75,7 +96,7 @@
       </div>
       <div>
         <button id="downloadAllBtn" class="btn btn-secondary">
-          <i class="fas fa-download"></i> Alle sichtbaren herunterladen
+          <i class="fas fa-download"></i>&nbsp;&nbsp;Alle sichtbaren herunterladen
         </button>
       </div>
     </div>
