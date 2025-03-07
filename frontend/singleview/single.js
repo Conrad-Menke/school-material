@@ -10,11 +10,27 @@ let ctx = null;
 // DOM-Elemente
 const loadingIndicator = document.getElementById('loading-indicator');
 const materialContent = document.getElementById('material-content');
-const errorContainer = document.getElementById('error-container');
+const errorContainer = document.getElementById('error-content');
 const prevPageButton = document.getElementById('prev-page');
 const nextPageButton = document.getElementById('next-page');
 const pageInfo = document.getElementById('page-info');
 const zoomSelect = document.getElementById('zoom-select');
+
+// Custom sweetalert-like notification system (in case SweetAlert isn't available)
+const Notify = {
+  fire: function(options) {
+    // Check if SweetAlert is available
+    if (typeof Swal !== 'undefined') {
+      return Swal.fire(options);
+    }
+    
+    // Fallback notification
+    const confirmed = window.confirm(options.text || options.title);
+    return Promise.resolve({
+      isConfirmed: confirmed
+    });
+  }
+};
 
 // Initialisiere die Ansicht
 document.addEventListener('DOMContentLoaded', async () => {
@@ -27,8 +43,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Material-Details laden
 async function loadMaterialDetails() {
-  const materialId = window.location.pathname.split('/').pop();
+  // Get material ID from URL
+  const pathParts = window.location.pathname.split('/');
+  const materialId = pathParts[pathParts.length - 1];
   console.log('Material-ID:', materialId);
+  
+  if (!materialId || isNaN(parseInt(materialId))) {
+    throw new Error('Ungültige Material-ID');
+  }
   
   try {
     // Material-Daten laden
@@ -45,7 +67,19 @@ async function loadMaterialDetails() {
     updateUI(material);
     
     // PDF laden
-    initPdfViewer(material.id);
+    try {
+      await initPdfViewer(material.id);
+    } catch (pdfError) {
+      console.warn('PDF konnte nicht geladen werden:', pdfError);
+      // Show a notification but don't treat this as a fatal error
+      document.querySelector('.pdf-container').innerHTML = `
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Das PDF konnte nicht geladen werden. Möglicherweise handelt es sich um ein anderes Dateiformat.</p>
+          <p>Sie können das Material trotzdem <a href="/download/${material.id}" class="alert-link">herunterladen</a>.</p>
+        </div>
+      `;
+    }
     
     // Lade-Indikator ausblenden, Inhalt anzeigen
     loadingIndicator.style.display = 'none';
@@ -58,37 +92,99 @@ async function loadMaterialDetails() {
 
 // UI mit Material-Daten aktualisieren
 function updateUI(material) {
+  // Sicherheitscheck
+  if (!material) {
+    throw new Error('Keine Materialdaten vorhanden');
+  }
+  
   // Titel und Metadaten
-  document.title = `${material.titel} - Ursulinenrealschule`;
-  document.getElementById('title').textContent = material.titel;
-  document.getElementById('klasse').textContent = material.klasse || '-';
-  document.getElementById('fach').textContent = material.fach || '-';
-  document.getElementById('thema').textContent = material.thema || '-';
-  document.getElementById('materialform').textContent = material.materialform || '-';
-  document.getElementById('beschreibung').textContent = material.beschreibung || '-';
-  document.getElementById('autor').textContent = material.Autor || '-';
+  document.title = `${escapeHtml(material.titel || 'Unbekanntes Material')} - Ursulinenrealschule`;
+  document.getElementById('title').textContent = material.titel || 'Unbekanntes Material';
+  
+  // Set field values with safety checks
+  setFieldValue('klasse', material.klasse);
+  setFieldValue('fach', material.fach);
+  setFieldValue('thema', material.thema);
+  setFieldValue('materialform', material.materialform);
+  setFieldValue('beschreibung', material.beschreibung);
+  setFieldValue('autor', material.Autor);
   
   // Datum formatieren
   const datumElement = document.getElementById('datum');
-  if (material.Datum) {
-    const datum = new Date(material.Datum);
-    datumElement.textContent = datum.toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  } else {
-    datumElement.textContent = '-';
+  if (datumElement) {
+    if (material.Datum) {
+      try {
+        const datum = new Date(material.Datum);
+        datumElement.textContent = datum.toLocaleDateString('de-DE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      } catch (e) {
+        datumElement.textContent = material.Datum;
+      }
+    } else {
+      datumElement.textContent = '-';
+    }
   }
   
   // Links aktualisieren
-  document.getElementById('download-link').href = `/download/${material.id}`;
-  document.getElementById('edit-link').href = `/edit/edit.html?id=${material.id}`;
+  const downloadLink = document.getElementById('download-link');
+  if (downloadLink) {
+    downloadLink.href = `/download/${material.id}`;
+    downloadLink.setAttribute('data-id', material.id);
+    downloadLink.addEventListener('click', handleDownload);
+  }
+  
+  const editLink = document.getElementById('edit-link');
+  if (editLink) {
+    editLink.href = `/edit/edit.html?id=${material.id}`;
+  }
   
   // Lösch-Button konfigurieren
   const deleteButton = document.getElementById('delete-btn');
-  deleteButton.setAttribute('data-id', material.id);
-  deleteButton.addEventListener('click', handleDelete);
+  if (deleteButton) {
+    deleteButton.setAttribute('data-id', material.id);
+    deleteButton.addEventListener('click', handleDelete);
+  }
+}
+
+// Helper function to set field value with safety check
+function setFieldValue(fieldId, value) {
+  const element = document.getElementById(fieldId);
+  if (element) {
+    element.textContent = value || '-';
+  }
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+  if (text === null || text === undefined) {
+    return '';
+  }
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Handle download action
+function handleDownload(event) {
+  const link = event.currentTarget;
+  const materialId = link.getAttribute('data-id');
+  
+  // Show loading state
+  const originalText = link.innerHTML;
+  link.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp;&nbsp; Lädt...';
+  link.classList.add('downloading');
+  
+  // Reset button state after download starts
+  setTimeout(() => {
+    link.innerHTML = originalText;
+    link.classList.remove('downloading');
+  }, 2000);
 }
 
 // Lösch-Aktion behandeln
@@ -99,7 +195,7 @@ function handleDelete(event) {
   const materialId = button.getAttribute('data-id');
   
   // Bestätigung vom Benutzer einholen
-  Swal.fire({
+  Notify.fire({
     title: 'Material löschen?',
     text: 'Diese Aktion kann nicht rückgängig gemacht werden!',
     icon: 'warning',
@@ -123,11 +219,12 @@ async function deleteMaterial(materialId) {
     });
     
     if (!response.ok) {
-      throw new Error('Fehler beim Löschen des Materials');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Fehler beim Löschen des Materials');
     }
     
     // Erfolgsbestätigung
-    Swal.fire({
+    Notify.fire({
       title: 'Gelöscht!',
       text: 'Das Material wurde erfolgreich gelöscht.',
       icon: 'success',
@@ -139,9 +236,9 @@ async function deleteMaterial(materialId) {
   } catch (error) {
     console.error('Fehler beim Löschen:', error);
     
-    Swal.fire({
+    Notify.fire({
       title: 'Fehler',
-      text: 'Beim Löschen ist ein Fehler aufgetreten.',
+      text: 'Beim Löschen ist ein Fehler aufgetreten: ' + error.message,
       icon: 'error',
       confirmButtonText: 'OK'
     });
@@ -150,43 +247,43 @@ async function deleteMaterial(materialId) {
 
 // PDF-Viewer initialisieren
 function initPdfViewer(materialId) {
-  // Canvas-Elemente holen
-  canvas = document.getElementById('pdf-preview');
-  ctx = canvas.getContext('2d');
-  
-  // PDF-URL
-  const pdfUrl = `/download/${materialId}`;
-  
-  // PDF laden
-  const loadingTask = pdfjsLib.getDocument(pdfUrl);
-  loadingTask.promise.then(function(pdf) {
-    console.log('PDF geladen, Seitenanzahl:', pdf.numPages);
+  return new Promise((resolve, reject) => {
+    // Canvas-Elemente holen
+    canvas = document.getElementById('pdf-preview');
+    if (!canvas) {
+      reject(new Error('PDF Canvas nicht gefunden'));
+      return;
+    }
     
-    pdfDoc = pdf;
-    pageInfo.textContent = `Seite ${pageNum} von ${pdf.numPages}`;
+    ctx = canvas.getContext('2d');
     
-    // Aktiviere/deaktiviere Seitennavigation
-    updateNavButtons();
+    // PDF-URL
+    const pdfUrl = `/download/${materialId}`;
     
-    // Erste Seite rendern
-    renderPage(pageNum);
-    
-    // Event-Listener für Navigation hinzufügen
-    prevPageButton.addEventListener('click', onPrevPage);
-    nextPageButton.addEventListener('click', onNextPage);
-    zoomSelect.addEventListener('change', onZoomChange);
-  }).catch(function(error) {
-    console.error('Fehler beim Laden des PDFs:', error);
-    
-    // PDF-Container mit Fehlermeldung ersetzen
-    const pdfContainer = document.querySelector('.pdf-container');
-    pdfContainer.innerHTML = `
-      <div class="alert alert-danger">
-        <i class="fas fa-exclamation-triangle"></i>
-        <p>Das PDF konnte nicht geladen werden. Möglicherweise handelt es sich um ein anderes Dateiformat.</p>
-        <p>Sie können das Material trotzdem <a href="/download/${materialId}" class="alert-link">herunterladen</a>.</p>
-      </div>
-    `;
+    // PDF laden
+    const loadingTask = pdfjsLib.getDocument(pdfUrl);
+    loadingTask.promise.then(function(pdf) {
+      console.log('PDF geladen, Seitenanzahl:', pdf.numPages);
+      
+      pdfDoc = pdf;
+      pageInfo.textContent = `Seite ${pageNum} von ${pdf.numPages}`;
+      
+      // Aktiviere/deaktiviere Seitennavigation
+      updateNavButtons();
+      
+      // Erste Seite rendern
+      renderPage(pageNum);
+      
+      // Event-Listener für Navigation hinzufügen
+      prevPageButton.addEventListener('click', onPrevPage);
+      nextPageButton.addEventListener('click', onNextPage);
+      zoomSelect.addEventListener('change', onZoomChange);
+      
+      resolve(pdf);
+    }).catch(function(error) {
+      console.error('Fehler beim Laden des PDFs:', error);
+      reject(error);
+    });
   });
 }
 
@@ -221,7 +318,13 @@ function renderPage(num) {
         renderPage(pageNumPending);
         pageNumPending = null;
       }
+    }).catch(function(error) {
+      console.error('Error rendering PDF page:', error);
+      pageRendering = false;
     });
+  }).catch(function(error) {
+    console.error('Error getting PDF page:', error);
+    pageRendering = false;
   });
   
   // Seiteninformation aktualisieren
@@ -257,6 +360,8 @@ function onZoomChange() {
 
 // Navigationsschaltflächen aktualisieren
 function updateNavButtons() {
+  if (!pdfDoc) return;
+  
   prevPageButton.disabled = pageNum <= 1;
   nextPageButton.disabled = pageNum >= pdfDoc.numPages;
 }
@@ -277,18 +382,20 @@ function showError(error) {
   // Lade-Indikator ausblenden
   loadingIndicator.style.display = 'none';
   
+  // Inhalt ausblenden
+  materialContent.style.display = 'none';
+  
   // Fehler anzeigen
   errorContainer.style.display = 'block';
-}
-
-// SweetAlert2 als Polyfill, falls nicht geladen
-if (typeof Swal === 'undefined') {
-  window.Swal = {
-    fire: function(options) {
-      const confirmed = window.confirm(options.text || options.title);
-      return Promise.resolve({
-        isConfirmed: confirmed
-      });
-    }
-  };
+  errorContainer.innerHTML = `
+    <div class="alert alert-danger">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Fehler beim Laden des Materials</h3>
+      <p>${escapeHtml(error.message || 'Unbekannter Fehler')}</p>
+      <div class="mt-md">
+        <button class="btn" onclick="window.location.reload()">Erneut versuchen</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/index.html'">Zurück zur Übersicht</button>
+      </div>
+    </div>
+  `;
 }

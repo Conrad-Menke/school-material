@@ -26,6 +26,9 @@ const ALLOWED_FILE_TYPES = [
   'application/x-zip-compressed'
 ];
 
+// Erlaubte Dateiendungen (verwendet für RegEx)
+const ALLOWED_EXTENSIONS = /\.(pdf|doc|docx|ppt|pptx|zip)$/i;
+
 // Initialisierung
 document.addEventListener('DOMContentLoaded', () => {
   // Dropdown-Optionen sortieren
@@ -36,7 +39,23 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Datei-Input validieren
   document.getElementById('material').addEventListener('change', validateFileInput);
+  
+  // Tooltip-Initialisierung (falls verwendet)
+  initializeTooltips();
 });
+
+// Tooltip-Initialisierung (kann bei Bedarf angepasst werden)
+function initializeTooltips() {
+  // Diese Funktion kann genutzt werden, um Tooltips zu initialisieren
+  // (z.B. mit Bootstrap oder einer eigenen Implementierung)
+  const tooltips = document.querySelectorAll('[data-tooltip]');
+  
+  tooltips.forEach(tooltip => {
+    tooltip.addEventListener('mouseover', (e) => {
+      // Tooltip-Logik hier
+    });
+  });
+}
 
 // Dropdown-Optionen sortieren
 function sortSelectOptions() {
@@ -49,6 +68,8 @@ function sortSelectOptions() {
 
 // Optionen in einem Select-Element sortieren
 function sortOptions(selectElement) {
+  if (!selectElement) return;
+  
   const options = Array.from(selectElement.options);
   
   // Die erste Option ("Bitte wählen") beibehalten
@@ -166,10 +187,28 @@ function updateProgressBar(percent) {
 
 // Formular validieren
 function validateForm() {
+  // Pflichtfelder prüfen
+  const requiredFields = [
+    { id: 'klasse', name: 'Klasse' },
+    { id: 'fach', name: 'Unterrichtsfach' },
+    { id: 'materialform', name: 'Materialform' },
+    { id: 'thema', name: 'Unterrichtsthema' },
+    { id: 'titel', name: 'Materialtitel' },
+    { id: 'beschreibung', name: 'Beschreibung' },
+    { id: 'autor', name: 'AutorIn' }
+  ];
+  
+  for (const field of requiredFields) {
+    const element = document.getElementById(field.id);
+    if (!element || !element.value.trim()) {
+      alert(`Bitte füllen Sie das Feld "${field.name}" aus.`);
+      if (element) element.focus();
+      return false;
+    }
+  }
+  
   // Datei-Input validieren
-  const fileInput = document.getElementById('material');
   if (!validateFileInput()) {
-    fileInput.focus();
     return false;
   }
   
@@ -179,12 +218,13 @@ function validateForm() {
 // Datei-Input validieren
 function validateFileInput() {
   const fileInput = document.getElementById('material');
-  const file = fileInput.files[0];
-  
-  // Überprüfen, ob eine Datei ausgewählt wurde
-  if (!file) {
+  if (!fileInput || !fileInput.files.length) {
+    alert('Bitte wählen Sie eine Datei aus.');
+    if (fileInput) fileInput.focus();
     return false;
   }
+  
+  const file = fileInput.files[0];
   
   // Dateigröße überprüfen
   if (file.size > MAX_FILE_SIZE) {
@@ -193,19 +233,24 @@ function validateFileInput() {
     return false;
   }
   
-  // Dateityp überprüfen (wenn möglich)
-  if (file.type && !ALLOWED_FILE_TYPES.includes(file.type)) {
-    // Dateiendung überprüfen (als Fallback)
+  // Dateityp überprüfen
+  let isValidType = false;
+  
+  // MIME-Typ überprüfen (wenn verfügbar)
+  if (file.type && ALLOWED_FILE_TYPES.includes(file.type)) {
+    isValidType = true;
+  }
+  
+  // Dateiendung überprüfen (als Fallback)
+  if (!isValidType) {
     const fileName = file.name.toLowerCase();
-    const isAllowedExtension = ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.zip'].some(ext => 
-      fileName.endsWith(ext)
-    );
-    
-    if (!isAllowedExtension) {
-      alert('Dieser Dateityp wird nicht unterstützt. Bitte laden Sie eine PDF-, Word-, PowerPoint- oder ZIP-Datei hoch.');
-      fileInput.value = '';
-      return false;
-    }
+    isValidType = ALLOWED_EXTENSIONS.test(fileName);
+  }
+  
+  if (!isValidType) {
+    alert('Dieser Dateityp wird nicht unterstützt. Bitte laden Sie eine PDF-, Word-, PowerPoint- oder ZIP-Datei hoch.');
+    fileInput.value = '';
+    return false;
   }
   
   return true;
