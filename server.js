@@ -231,3 +231,82 @@ app.get('/materialien/:id', (req, res) => {
 app.listen(port, () => {
     console.log(`Server läuft auf http://localhost:${port}`);
 });
+
+
+// PUT: Update material
+app.put('/materialien/:id', upload.single('datei'), (req, res) => {
+    const materialId = req.params.id;
+    const { klasse, fach, materialform, thema, titel, beschreibung, autor, dateiPfad, originalDateiname } = req.body;
+    
+    // First, get the current record to check if we need to delete the old file
+    db.get('SELECT * FROM materialien WHERE id = ?', [materialId], (err, oldRecord) => {
+        if (err) {
+            console.error('Error fetching record:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        
+        if (!oldRecord) {
+            return res.status(404).json({ error: 'Record not found' });
+        }
+        
+        let newFilePath = oldRecord.dateiPfad;
+        let newOriginalName = oldRecord.originalDateiname;
+        
+        // If a new file was uploaded, use its info and delete the old file
+        if (req.file) {
+            newFilePath = req.file.filename;
+            newOriginalName = req.file.originalname;
+            
+            // Delete the old file if it exists
+            const oldFilePath = path.join(__dirname, 'uploads', oldRecord.dateiPfad);
+            fs.unlink(oldFilePath, (unlinkErr) => {
+                if (unlinkErr && unlinkErr.code !== 'ENOENT') {
+                    console.warn(`Could not delete old file: ${oldFilePath}`, unlinkErr);
+                    // Continue with the update even if file deletion fails
+                }
+            });
+        } else if (dateiPfad && originalDateiname) {
+            // If dateiPfad and originalDateiname were provided in the request body
+            // (usually when no new file is uploaded but we want to keep the old one)
+            newFilePath = dateiPfad;
+            newOriginalName = originalDateiname;
+        }
+        
+        // Update the database record
+        const sql = `UPDATE materialien SET 
+            klasse = ?, 
+            fach = ?, 
+            materialform = ?, 
+            thema = ?, 
+            titel = ?, 
+            beschreibung = ?, 
+            dateiPfad = ?, 
+            originalDateiname = ? 
+            WHERE id = ?`;
+            
+        const params = [
+            klasse,
+            fach, 
+            materialform,
+            thema,
+            titel,
+            beschreibung || oldRecord.beschreibung,
+            newFilePath,
+            newOriginalName,
+            materialId
+        ];
+        
+        db.run(sql, params, function(updateErr) {
+            if (updateErr) {
+                console.error('Error updating record:', updateErr);
+                return res.status(500).json({ error: updateErr.message });
+            }
+            
+            res.status(200).json({ 
+                message: 'Material successfully updated', 
+                id: materialId,
+                changes: this.changes
+            });
+        });
+    });
+});
