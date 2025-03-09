@@ -3,6 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const { exec } = require('child_process');
 const crypto = require('crypto');
 
 const app = express();
@@ -34,7 +35,7 @@ const storage = multer.diskStorage({
 const upload = multer({ 
     storage: storage,
     limits: {
-        fileSize: 20 * 1024 * 1024 // 20MB limit
+        fileSize: 1024 * 1024 * 1024 // 20MB limit
     }
 });
 
@@ -63,6 +64,17 @@ function verifyCSRFToken(req, res, next) {
     }
     next();
 }
+
+function generateThumbnail(videoPath, outputPath, callback) {
+    const command = `ffmpeg -i ${videoPath} -ss 00:00:01 -vframes 1 ${outputPath}`;
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Fehler bei der Thumbnail-Generierung: ${error}`);
+        return callback(error);
+      }
+      callback(null, outputPath);
+    });
+  }
 
 // GET: Alle Materialien abrufen
 app.get('/materialien', (req, res) => {
@@ -113,47 +125,81 @@ app.get('/materialien', (req, res) => {
     });
 });
 
-// POST: Material hochladen
-app.post('/upload', upload.single('datei'), (req, res) => {
-    const { klasse, fach, materialform, thema, titel, beschreibung, autor } = req.body;
-
-    if (!req.file) {
-        return res.status(400).json({ error: 'Keine Datei hochgeladen' });
-    }
-
-    // Validate input
-    if (!titel || !fach || !klasse || !materialform || !thema) {
-        return res.status(400).json({ error: 'Fehlende Pflichtfelder' });
-    }
-
-    const dateiPfad = req.file.filename; // Generierter Dateiname durch Multer
-    const originalDateiname = req.file.originalname; // Originaler Dateiname
-
-    const sql = `INSERT INTO materialien 
-        (klasse, fach, materialform, thema, titel, beschreibung, dateiPfad, originalDateiname, autor, datum) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-    const params = [
-        klasse,
-        fach,
-        materialform,
-        thema,
-        titel,
-        beschreibung || null,
-        dateiPfad,
-        originalDateiname,
-        autor || 'Unbekannt', // Standardwert, falls nicht angegeben
-        new Date().toISOString() // Current date
-    ];
-
-    db.run(sql, params, function (err) {
-        if (err) {
-            console.error('Database error during insert:', err);
-            return res.status(500).json({ error: 'Fehler beim Speichern in der Datenbank' });
-        }
-        res.status(200).json({ message: 'Erfolgreich hochgeladen', id: this.lastID });
-    });
-});
+/// POST: Material hochladen
+app.post('/upload', upload.fields([
+    { name: 'datei', maxCount: 1 },
+    { name: 'previewImage', maxCount: 1 }
+  ]), (req, res) => {
+      const { klasse, fach, materialform, thema, titel, beschreibung, autor } = req.body;
+  
+      if (!req.files || !req.files.datei || !req.files.datei.length) {
+          return res.status(400).json({ error: 'Keine Datei hochgeladen' });
+      }
+  
+      // Validate input
+      if (!titel || !fach || !klasse || !materialform || !thema) {
+          return res.status(400).json({ error: 'Fehlende Pflichtfelder' });
+      }
+  
+      const dateiPfad = req.files.datei[0].filename; // Generierter Dateiname durch Multer
+      const originalDateiname = req.files.datei[0].originalname; // Originaler Dateiname
+      
+      // Vorschaubild speichern, falls vorhanden
+      let previewImage = null;
+      if (req.files.previewImage && req.files.previewImage.length > 0) {
+          previewImage = req.files.previewImage[0].filename;
+      }
+  
+      // Wenn es ein Video ist und kein Vorschaubild hochgeladen wurde, eines generieren
+      if (materialform === 'Video' && !previewImage) {
+          const videoPath = path.join(__dirname, 'uploads', dateiPfad);
+          const thumbnailName = `thumb_${Date.now()}.jpg`;
+          const thumbnailPath = path.join(__dirname, 'uploads', thumbnailName);
+          
+          generateThumbnail(videoPath, thumbnailPath, (err, outputPath) => {
+              if (!err) {
+                  previewImage = thumbnailName;
+                  // Nach der Thumbnail-Generierung in die Datenbank einfügen
+                  insertIntoDatabase(previewImage);
+              } else {
+                  // Trotz Fehler bei der Thumbnail-Generierung in die Datenbank einfügen
+                  insertIntoDatabase(null);
+              }
+          });
+      } else {
+          // Wenn es kein Video ist oder ein Vorschaubild hochgeladen wurde, direkt einfügen
+          insertIntoDatabase(previewImage);
+      }
+  
+      // Funktion zum Einfügen in die Datenbank
+      function insertIntoDatabase(previewImagePath) {
+          const sql = `INSERT INTO materialien 
+              (klasse, fach, materialform, thema, titel, beschreibung, dateiPfad, originalDateiname, autor, datum, previewImage) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  
+          const params = [
+              klasse,
+              fach,
+              materialform,
+              thema,
+              titel,
+              beschreibung || null,
+              dateiPfad,
+              originalDateiname,
+              autor || 'Unbekannt', // Standardwert, falls nicht angegeben
+              new Date().toISOString(), // Current date
+              previewImagePath
+          ];
+  
+          db.run(sql, params, function (err) {
+              if (err) {
+                  console.error('Database error during insert:', err);
+                  return res.status(500).json({ error: 'Fehler beim Speichern in der Datenbank' });
+              }
+              res.status(200).json({ message: 'Erfolgreich hochgeladen', id: this.lastID });
+          });
+      }
+  });
 
 // GET: Material herunterladen
 app.get('/download/:id', (req, res) => {
@@ -485,3 +531,17 @@ app.listen(port, () => {
     console.log(`Server läuft auf http://localhost:${port}`);
     createDatabaseIndices();
 });
+
+app.get('/videos', (req, res) => {
+    const sql = 'SELECT * FROM materialien WHERE materialform = "Video"';
+    db.all(sql, [], (err, rows) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Datenbankfehler' });
+      }
+      res.json(rows);
+    });
+  });
+
+// In server.js überprüfen oder hinzufügen
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

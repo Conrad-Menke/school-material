@@ -13,21 +13,28 @@ const materialformSelect = document.getElementById('materialform');
 const klasseSelect = document.getElementById('klasse');
 
 // Maximale Dateigröße in Bytes (20MB)
-const MAX_FILE_SIZE = 20 * 1024 * 1024;
+const MAX_FILE_SIZE = 1024 * 1024 * 1024;
 
 // Erlaubte Dateitypen
 const ALLOWED_FILE_TYPES = [
+  // Bisherige Typen
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-powerpoint',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'application/zip',
-  'application/x-zip-compressed'
+  'application/x-zip-compressed',
+  'video/mp4',
+  'video/webm',
+  'video/ogg',
+  'image/jpeg',
+  'image/png'
 ];
 
-// Erlaubte Dateiendungen (verwendet für RegEx)
-const ALLOWED_EXTENSIONS = /\.(pdf|doc|docx|ppt|pptx|zip)$/i;
+// Erlaubte Dateiendungen erweitern
+const ALLOWED_EXTENSIONS = /\.(pdf|doc|docx|ppt|pptx|zip|mp4|webm|ogg|jpg|jpeg|png)$/i;
+
 
 // Initialisierung
 document.addEventListener('DOMContentLoaded', () => {
@@ -37,8 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Event-Listener für das Formular
   uploadForm.addEventListener('submit', handleFormSubmit);
   
-  // Datei-Input validieren
-  document.getElementById('material').addEventListener('change', validateFileInput);
+// Zur upload.js hinzufügen
+document.getElementById('previewImage')?.addEventListener('change', handlePreviewImageChange);
+
   
   // Tooltip-Initialisierung (falls verwendet)
   initializeTooltips();
@@ -185,6 +193,65 @@ function updateProgressBar(percent) {
   progressText.textContent = `${percent}%`;
 }
 
+function handlePreviewImageChange(event) {
+  const file = event.target.files[0];
+  const previewContainer = document.getElementById('preview-image-container');
+  
+  if (!file) {
+    // Wenn keine Datei ausgewählt wurde, verstecke die Vorschau
+    if (previewContainer) {
+      previewContainer.style.display = 'none';
+    }
+    return;
+  }
+  
+  // Validiere Dateityp
+  if (!file.type.startsWith('image/')) {
+    alert('Bitte wählen Sie ein Bild aus (JPG, PNG).');
+    event.target.value = '';
+    return;
+  }
+  
+  // Validiere Dateigröße (max. 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Das Bild ist zu groß. Die maximale Größe beträgt 5MB.');
+    event.target.value = '';
+    return;
+  }
+  
+  // Bild-Vorschau erstellen
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (!previewContainer) {
+      // Erstelle Container, falls nicht vorhanden
+      const container = document.createElement('div');
+      container.id = 'preview-image-container';
+      container.className = 'preview-image-container';
+      
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.alt = 'Vorschaubild';
+      
+      const removeButton = document.createElement('div');
+      removeButton.className = 'remove-preview';
+      removeButton.innerHTML = '<i class="fas fa-times"></i>';
+      removeButton.addEventListener('click', removePreviewImage);
+      
+      container.appendChild(img);
+      container.appendChild(removeButton);
+      
+      // Füge Container zur DOM hinzu
+      const previewUploadField = document.querySelector('.preview-upload');
+      previewUploadField.appendChild(container);
+    } else {
+      // Aktualisiere vorhandene Vorschau
+      previewContainer.style.display = 'block';
+      previewContainer.querySelector('img').src = e.target.result;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
 // Formular validieren
 function validateForm() {
   // Pflichtfelder prüfen
@@ -215,7 +282,19 @@ function validateForm() {
   return true;
 }
 
-// Datei-Input validieren
+function removePreviewImage(event) {
+  event.preventDefault();
+  
+  // Zurücksetzen des Datei-Inputs
+  document.getElementById('previewImage').value = '';
+  
+  // Verstecken der Vorschau
+  const previewContainer = document.getElementById('preview-image-container');
+  if (previewContainer) {
+    previewContainer.style.display = 'none';
+  }
+}
+
 function validateFileInput() {
   const fileInput = document.getElementById('material');
   if (!fileInput || !fileInput.files.length) {
@@ -248,9 +327,23 @@ function validateFileInput() {
   }
   
   if (!isValidType) {
-    alert('Dieser Dateityp wird nicht unterstützt. Bitte laden Sie eine PDF-, Word-, PowerPoint- oder ZIP-Datei hoch.');
+    alert('Dieser Dateityp wird nicht unterstützt. Bitte laden Sie eine unterstützte Datei hoch (PDF, Word, PowerPoint, ZIP, Video).');
     fileInput.value = '';
     return false;
+  }
+  
+  // Zusätzliche Validierung für Videos
+  const materialformValue = document.getElementById('materialform').value;
+  if (materialformValue === 'Video') {
+    // Prüfe, ob es sich um ein Videoformat handelt
+    const isVideo = file.type.startsWith('video/') || 
+                   /\.(mp4|webm|ogg)$/i.test(file.name.toLowerCase());
+    
+    if (!isVideo) {
+      alert('Für die Materialform "Video" muss die Datei ein Videoformat sein (MP4, WebM, OGG).');
+      fileInput.value = '';
+      return false;
+    }
   }
   
   return true;

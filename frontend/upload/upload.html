@@ -16,7 +16,7 @@
   <nav class="nav">
     <a href="/index.html"><i class="fas fa-home"></i> Übersicht</a>
     <a href="../upload/upload.html"><i class="fas fa-upload"></i> Material hochladen</a>
-    <a href="../upload/upload.html"><i class="fas fa-video"></i> Videodatenbank</a>
+    <a href="../videos/videos.html"><i class="fas fa-video"></i> Videodatenbank</a>  
   </nav>
 
   <div class="container">
@@ -79,6 +79,7 @@
               <option value="Klassenarbeit">Klassenarbeit</option>
               <option value="Unterrichtsentwurf">Unterrichtsentwurf</option>
               <option value="Unterrichtspräsentation">Unterrichtspräsentation</option>
+              <option value="Video">Video</option>
             </select>
           </div>
           
@@ -105,9 +106,8 @@
             
             <div class="form-group" style="flex: 1; min-width: 300px;">
               <label for="material" class="form-label"><i class="fas fa-file-pdf"></i> Material hochladen:</label>
-              <input type="file" id="material" name="datei" class="form-file" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip" required><br>
-              <small>Unterstützte Formate: PDF, Word, PowerPoint, ZIP (max. 20MB)</small>
-            </div>
+              <input type="file" id="material" name="datei" class="form-file" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.mp4,.webm,.ogg" required><br>
+              <small>Unterstützte Formate: PDF, Word, PowerPoint, ZIP, Videoformate (MP4, WebM, OGG)<br><strong>Maximale Größe: 1GB</strong></small>            </div>
           </div>
           
           <div class="form-group">
@@ -151,7 +151,11 @@
           </div>
         </div>
       </div>
-      
+      <div class="form-group preview-upload" style="display:none;">
+        <label for="previewImage" class="form-label"><i class="fas fa-image"></i> Vorschaubild hochladen:</label>
+        <input type="file" id="previewImage" name="previewImage" class="form-file" accept=".jpg,.jpeg,.png"><br>
+        <small>Optionales Vorschaubild für Videos (JPG, PNG, max. 5MB).</small>
+      </div>
       <div class="card-footer">
         <p><i class="fas fa-info-circle"></i> Alle Felder mit * sind Pflichtfelder. Bitte stellen Sie sicher, dass Ihre Materialien keine urheberrechtlich geschützten Inhalte enthalten.</p>
       </div>
